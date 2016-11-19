@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <title>classifier2web</title>
+    <meta charser = "utf-8">
+    <style>
+      .test {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: url('../static/55b8d5283903e.jpg');
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="graph" class="epoch" style="height: 550px;"></div>
+    <div class="test"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/epoch.min.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/epoch.min.css') }}">
+    <link rel="stylesheet" href="../static/css/pdf-slide.css">
+    <script src="../static/js/build.js"></script>
+    <script type="text/javascript">
+        var ws = new WebSocket("ws://localhost:8000/publish");
+        var data = [{
+            label: "Series 1",
+            values: []
+        }, {
+            label: "Series 2",
+            values: []
+        }, ];
+        var lineChart = $('#graph').epoch({
+            type: 'time.line',
+            data: data,
+            axes: ['left', 'right', 'bottom']
+        });
+        ws.onmessage = function(msg) {
+            var current = JSON.parse(msg.data);
+            console.log(current);
+            lineChart.push(current);
+        };
+    </script>
+</body>
+
+</html>
