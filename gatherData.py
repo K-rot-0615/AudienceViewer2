@@ -10,7 +10,7 @@ from PIL import Image
 from datetime import datetime
 from multiprocessing import Process
 
-camera = 2
+camera = 3
 cameraNum = [0, 1, 2]
 cap = []
 
@@ -51,10 +51,10 @@ def faceDetect(pre_detectPath, savePath, resize):
 		i = 1
 		imageList, _ = dataRead(savePath)
 		for rect in facerect:
-			x = rect[0] - 50
-			y = rect[1] - 50
-			width = rect[2] + 100
-			height = rect[3] + 100
+			x = rect[0] - 40
+			y = rect[1] - 40
+			width = rect[2] + 50
+			height = rect[3] + 50
 			dst = img[y : y + 10 + 3 * height, x : x + 30 + width]
 			imgResize = cv2.resize(dst,(resize,resize))
 			newImage_path = savePath + str(len(imageList) + i) + '.png'
@@ -110,17 +110,20 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
     # detect face with already gathrede frame images
-	faceDetect(args.detect, args.output, args.size)
+	#faceDetect(args.detect, args.output, args.size)
 
 	# gather data for making model
-	'''
-	for i in camera:
+	for i in range(camera):
 		cap.append(cv2.VideoCapture(i))
 	while True:
-		ret, frame0 = cap[0].read()
-	    ret, frame1 = cap[1].read()
-		cv2.imshow('camera capture', frame)
-		pre_predictData = faceDetect(frame, cameraNum[0], args.detect, args.output, args.size)
+		ret, frame1 = cap[1].read()
+		ret, frame2 = cap[2].read()
+		frameResize1 = cv2.resize(frame1, (800, 800))
+		frameResize2 = cv2.resize(frame2, (850, 850))
+		cv2.imshow('camera1 capture', frameResize1)
+		cv2.imshow('camera2 capture', frameResize2)
+		gatherData(frameResize1, cameraNum[1], args.detect)
+		gatherData(frameResize2, cameraNum[2], args.detect)
 
 		k = cv2.waitKey(10)
 		if k == 27:
@@ -129,10 +132,9 @@ if __name__ == '__main__':
 	# detect face after gathering frame images
 	faceDetect(args.detect, args.output, args.size)
 
-	cap[0].release()
 	cap[1].release()
+	cap[2].release()
 	cv2.destroyAllWindows()
-	'''
 
 	# gather data for predict
 	'''
