@@ -14,11 +14,12 @@ class CNN(chainer.Chain):
         super(CNN, self).__init__(
             conv1=L.Convolution2D(None, 96, 8, stride=2),
             conv2=L.Convolution2D(None, 256, 5, stride=2, pad=1),
-            conv3=L.Convolution2D(None, 384, 3, stride=2, pad=1),
-            conv4=L.Convolution2D(None, 256, 3, pad=1),
-            fc5=L.Linear(None,100),
-            fc6=L.Linear(None,30),
-            fc7=L.Linear(None,3),
+            conv3=L.Convolution2D(None, 384, 4, stride=2, pad=1),
+            conv4=L.Convolution2D(None, 384, 3, pad=1),
+            conv5=L.Convolution2D(None, 256, 3, pad=1),
+            fc6=L.Linear(None,100),
+            fc7=L.Linear(None,30),
+            fc8=L.Linear(None,3),
         )
         self.train = True
 
@@ -27,8 +28,9 @@ class CNN(chainer.Chain):
         h = F.relu(self.conv2(h))
         h = F.relu(self.conv3(h))
         h = F.relu(self.conv4(h))
-        h = F.dropout(F.relu(self.fc5(h)), train=self.train)
+        h = F.relu(self.conv5(h))
         h = F.dropout(F.relu(self.fc6(h)), train=self.train)
-        h = self.fc7(h)
+        h = F.dropout(F.relu(self.fc7(h)), train=self.train)
+        h = self.fc8(h)
 
         return h
