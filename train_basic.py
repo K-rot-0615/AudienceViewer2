@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--batchsize', '-b', type=int, default=20)
     parser.add_argument('--epoch', '-e', type=int, default=20)
     parser.add_argument('--gpu', '-g', type=int, default=-1)
-    parser.add_argument('--out', '-o', default='result_alex')
+    parser.add_argument('--out', '-o', default='result_basic')
     parser.add_argument('--channel', '-c', type=int, default=3)
 
     args = parser.parse_args()
@@ -41,7 +41,7 @@ def main():
     data.append(np.asarray(['./datasets/others/', 2]))
     train, test = labeling(data, args.channel)
 
-    model = L.Classifier(Alex())
+    model = L.Classifier(CNN())
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()
         model.to_gpu()
