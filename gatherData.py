@@ -10,9 +10,10 @@ from PIL import Image
 from datetime import datetime
 from multiprocessing import Process
 
-camera = 3
+camera = 2
 cameraNum = [0, 1, 2]
 cap = []
+folder = 0
 
 
 def dataRead(path):
@@ -21,6 +22,13 @@ def dataRead(path):
 	for imgName in imgList:
 		data.append(imgName)
 	return imgList, data
+
+
+def latest_filePath(directory):
+    target = os.path.join(directory, '*')
+    files = [(f, os.path.getmtime(f)) for f in glob(target)]
+    latest_filePath = sorted(files, key = lambda files: files[1])[-1]
+    return latest_filePath[0]
 
 
 def gatherData(frame, cameraNum, pre_detectPath):
@@ -63,6 +71,8 @@ def faceDetect(pre_detectPath, savePath, resize):
 
 
 def faceDetect4Predict(frame, cameraNum, pre_detectPath, savePath, resize):
+	global folder
+
 	cascade_path = "./lib/haarcascade_frontalface_default.xml"
 	cascade = cv2.CascadeClassifier(cascade_path)
 
@@ -73,46 +83,55 @@ def faceDetect4Predict(frame, cameraNum, pre_detectPath, savePath, resize):
 		print 'make pre_detectPath!'
 	cv2.imwrite(now_image, frame)
 
-	_, images = dataRead(pre_detectPath)
-	for image in images:
-		img = cv2.imread(image)
-		facerect = cascade.detectMultiScale(img, scaleFactor=1.2, minNeighbors=3, minSize=(10, 10))
-		if len(facerect) > 0:
-		    print 'Face has been detected'
-		    if os.path.isdir(savePath) == False:
-			    os.mkdir(savePath)
-			    print 'make image path'
-		    else:
-			    print 'path already exists'
+	print folder
 
-        i = 1
-        imageList, _ = dataRead(savePath)
-        for rect in facerect:
-			x = rect[0] - 50
-			y = rect[1] - 50
-			width = rect[2] + 100
-			height = rect[3] + 100
-			dst = img[y : y + 10 + 3 * height, x : x + 30 + width]
-			#imgResize = cv2.resize(dst,None,fx=dst.shape[0]/resize,fy=dst.shape[1]/resize)
-			imgResize = cv2.resize(dst,(resize,resize))
-			newImage_path = savePath + "/" + str(len(imageList) + i) + '.png'
-			cv2.imwrite(newImage_path, imgResize)
-			i = i + 1
+	#image = latest_filePath(pre_detectPath)
+	img = cv2.imread(now_image)
+	facerect = cascade.detectMultiScale(img, scaleFactor=1.2, minNeighbors=3, minSize=(10, 10))
+	if len(facerect) > 0:
+		print 'Face has been detected'
+		if os.path.isdir(savePath) == False:
+			os.mkdir(savePath)
+			print 'make image path'
+		else:
+			print 'path already exists'
+
+	i = 1
+	for rect in facerect:
+		print "orude!!!!"
+		x = rect[0] - 40
+		y = rect[1] - 40
+		width = rect[2] + 50
+		height = rect[3] + 50
+		dst = img[y : y + 10 + 3 * height, x : x + 30 + width]
+		#imgResize = cv2.resize(dst,None,fx=dst.shape[0]/resize,fy=dst.shape[1]/resize)
+		imgResize = cv2.resize(dst,(resize,resize))
+		newImage_path = savePath + str(folder) + '/'
+		newImage = newImage_path + str(i) + '.png'
+		if os.path.isdir(newImage_path) == False:
+			os.mkdir(newImage_path)
+		cv2.imwrite(newImage, imgResize)
+		i = i + 1
+
+	folder = folder + 1
 
 	time.sleep(3)
 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='face detect')
-	parser.add_argument('--detect', '-d', type=str, default='')
-	parser.add_argument('--output', '-o', type=str, default='')
+	#parser.add_argument('--detect', '-d', type=str, default='Y:/pre_experiment/detect/')
+	#parser.add_argument('--output', '-o', type=str, default='Y:/pre_experiment/predict/')
+	parser.add_argument('--detect', '-d', type=str, default='./datasets/pre_experiment/detect/')
+	parser.add_argument('--output', '-o', type=str, default='./datasets/pre_experiment/predict/')
 	parser.add_argument('--size', '-s', type=int, default=128)
 	args = parser.parse_args()
 
-    # detect face with already gathrede frame images
+    # detect face with already gathred frame images
 	#faceDetect(args.detect, args.output, args.size)
 
-	# gather data for making model
+    # gather data for making model
+	'''
 	for i in range(camera):
 		cap.append(cv2.VideoCapture(i))
 	while True:
@@ -135,27 +154,29 @@ if __name__ == '__main__':
 	cap[1].release()
 	cap[2].release()
 	cv2.destroyAllWindows()
-
-	# gather data for predict
 	'''
-	for i in camera:
+
+    # gather data for predict
+	for i in range(camera):
 		cap.append(cv2.VideoCapture(i))
 	while True:
 		ret, frame0 = cap[0].read()
-		ret, frame1 = cap[1].read()
+		#ret, frame1 = cap[1].read()
 		cv2.imshow('predicted data', frame0)
-		cv2.imshow('predicted data', frame0)
-		predictedData0 = Process(target = faceDetect4model(frame0, 0, args.detect, args.output, args.size),
-		                         args = (frame0, cameraNum[0]))
-		predictedData1 = Process(target = faceDetect4model(frame1, 0, args.detect, args.output, args.size),
-		                         args = (frame1, cameraNum[1])
+		#cv2.imshow('predicted data', frame1)
+		predictedData0 = Process(target = faceDetect4Predict(frame0, 0, args.detect + str(0) + '/',
+		                         args.output + str(0) + '/', args.size),
+								 args = (frame0, cameraNum[0]))
+		#predictedData1 = Process(target = faceDetect4Predict(frame1, 0, args.detect + str(1) + '/',
+		                         #args.output + str(1) + '/', args.size),
+								 #args = (frame1, cameraNum[1]))
 
-	    # multiprocessing
+        # multiprocessing
 		predictedData0.start()
 		predictedData0.join()
 
-		predictedData1.start()
-		predictedData1.join()
+		#predictedData1.start()
+		#predictedData1.join()
 
 		# escape from the roop
 		k = cv2.waitKey(10)
@@ -163,6 +184,5 @@ if __name__ == '__main__':
 			break
 
 	cap[0].release()
-	cap[1].release()
+	#cap[1].release()
 	cv2.destroyAllWindows()
-	'''
