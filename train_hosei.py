@@ -83,8 +83,8 @@ def main():
     modelName = output + '_' + date + '.model'
     optimizerName = output + '_' + date + '.state'
 
-    chainer.serializers.save_npz(modelName, model)
-    chainer.serializers.save_npz(optimizerName, optimizer)
+    chainer.serializers.save_npz(args.out + "/" + modelName, model)
+    chainer.serializers.save_npz(args.out + "/" + optimizerName, optimizer)
 
 
 if __name__ == '__main__':
