@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>classifier2web</title>
+    <title>AudienceViewer</title>
     <meta charser = "utf-8">
     <nostroke>
       <style>
@@ -51,14 +51,29 @@
           position: absolute;
           width: 100%;
           height: 100%;
-          opacity: 0;
+        }
+        #graph0{
+          opacity: 0.5;
+        }
+        #graph1{
+          opacity: 0.5;
+        }
+        #graph2{
+          opacity: 0.5;
+        }
+        #graph3{
+          opacity: 0.5;
         }
     </style>
   </head>
   <body>
     <h1></h1>
-    <div id="graph" class="epoch"></div>
-    <div id="pdf-container" class="pdf-page"></div>
+    <div id="graph0" class="epoch"></div>
+    <div id="graph1" class="epoch"></div>
+    <div id="graph2" class="epoch"></div>
+    <div id="graph3" class="epoch"></div>
+    <div id="pdf-container" class="pdf-page">
+    </div>
     <div class="controls">
         <div id="js-prev" class="arrow prev"></div>
         <div id="js-next" class="arrow next"></div>
@@ -71,31 +86,91 @@
     <script src="../static/js/build.js"></script>
     <script type="text/javascript">
         const ws = new WebSocket("ws://localhost:8000/publish");
-        var data = [{
-            label: "Series 1",
-            values: []
-        }, {
-            label: "Series 2",
-            values: []
-        }, ];
-        var lineChart = $('#graph').epoch({
+        var left_range = [0, 1];
+
+        var data0 = [{
+            label: "camera0",
+            values: [],
+            range: left_range
+        }];
+        var data1 = [{
+            label: "camera1",
+            values: [],
+            range: left_range
+        }];
+        var data2 = [{
+            label: "camera2",
+            values: [],
+            range: left_range
+        }];
+        var data3 = [{
+            label: "camera3",
+            values: [],
+            range: left_range
+        }];
+
+        var lineChart0 = $('#graph0').epoch({
             type: 'time.line',
-            data: data,
+            data: data0,
             axes: ['left', 'right', 'bottom']
         });
+        var lineChart1 = $('#graph1').epoch({
+            type: 'time.line',
+            data: data1,
+            axes: ['left', 'right', 'bottom']
+        });
+        var lineChart2 = $('#graph2').epoch({
+            type: 'time.line',
+            data: data2,
+            axes: ['left', 'right', 'bottom']
+        });
+        var lineChart3 = $('#graph3').epoch({
+            type: 'time.line',
+            data: data3,
+            axes: ['left', 'right', 'bottom']
+        });
+
+        var graph0 = document.getElementById('graph0');
+        var graph1 = document.getElementById('graph1');
+        var graph2 = document.getElementById('graph2');
+        var graph3 = document.getElementById('graph3');
         ws.onmessage = function(msg) {
+            console.log(msg);
             var current = JSON.parse(msg.data);
-            var average = current[1].y- current[0].y;
-            var graph = document.getElementsByClassName("epoch");
-            console.log(average);
-            lineChart.push(current);
-            if (average != 5) {
-              $('.epoch').css('opacity',0.2);
+            lineChart0.push([current[0]]);
+            lineChart1.push([current[1]]);
+            lineChart2.push([current[2]]);
+            lineChart3.push([current[3]]);
+            var length = Object.keys(current).length;
+
+            for (var key in current) {
+              (function(local) {
+                setTimeout(function(){
+                  console.log(local + ":" + current[local].y);
+                  $('#graph' + local).css('opacity',current[local].y);
+                  if (local != 0) {
+                    for (var i = 0; i < local; i++) {
+                      $('#graph' + i).css('opacity', 0);
+                    }
+                    if (local != length -1) {
+                      for (var i = local + 1; i < Object.keys(current).length; i++) {
+                        $('#graph' + i).css('opacity', 0);
+                      }
+                    }
+                  }
+                  else {
+                    for (var i = 1; i < length; i++) {
+                      $('#graph' + i).css('opacity', 0);
+                    }
+                  }
+                  console.log(graph0.style.opacity);
+                  console.log(graph1.style.opacity);
+                  console.log(graph2.style.opacity);
+                  console.log(graph3.style.opacity);
+                }, 3000);
+              }(key));
             }
-            else {
-              $('.epoch').css('opacity',1.0);
-            }
-            console.log(graph.opacity);
+
         };
     </script>
 </body>

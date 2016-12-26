@@ -7,8 +7,9 @@ const char* password = "koblabfms1116";
 WiFiUDP Udp;
 unsigned int localUdpPort = 8888;
 char incomingPacket[255];
-char* low = "LOOW";
+char* low = "LOW";
 char* high = "HIGH";
+char* average_high = "average_HIGH";
 char replyPacket[] = "Hi there! Got the message : -)";
 
 
@@ -44,19 +45,24 @@ void loop(){
   Serial.println(incomingPacket);
 
   if(strcmp(incomingPacket, low) == 0){
-     //digitalWrite(4, LOW);
-     Serial.println("LOW!!!!!!!");
+    Serial.println("LOW!!!!!!!");
+    digitalWrite(4, LOW);
   }
   
   if(strcmp(incomingPacket, high) == 0){
-     //digitalWrite(4, HIGH);
-     Serial.println("HIGH!!!!!!");
+    Serial.println("HIGH!!!!!!");
+    digitalWrite(4, HIGH);
   }
-  /*
-  else{
-    Serial.printf("nanimonaiyo!");
+
+  if(strcmp(incomingPacket, average_high) == 0){
+    Serial.println("averageishigh");
+    for(int i=0; i<3; i++){
+      digitalWrite(4, HIGH);
+      delay(100);
+      digitalWrite(4, LOW);
+      delay(100);
+    }
   }
-  */
 
   Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
   Udp.write(replyPacket);
