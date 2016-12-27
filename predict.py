@@ -200,7 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--testPath', '-t', type=str, default='./datasets/test/')
     parser.add_argument('--detect', '-d', type=str, default='')
     parser.add_argument('--output', '-o', type=str, default='Y:/experiment_1226/predict/') # win to ubuntu
-    #parser.add_argument('--output', '-o', type=str, default='/volumes/share/pre_experiment/predict/') # mac to ubuntu
+    #parser.add_argument('--output', '-o', type=str, default='/volumes/share/experiment_1226/predict/') # mac to ubuntu
     #parser.add_argument('--output', '-o', type=str, default='./datasets/pre_experiment/predict/') # local
     parser.add_argument('--size', '-s', type=int, default=128)
     parser.add_argument('--model', '-m', type=str, default='output3_20161217232915.model')
