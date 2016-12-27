@@ -159,7 +159,7 @@ def publish():
                 sock.sendto(threshold, (udp_ip,udp_port))
 
             ws.send(simplejson.dumps(jsonData))
-            time.sleep(3)
+            time.sleep(5)
 
             # multi processing
             '''
