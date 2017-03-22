@@ -1,12 +1,10 @@
-from alexnet import Alex
-from cnn_basic import CNN
-from cnn_hoseiuniv import HoseiCNN
-from nin import NIN
-from googlenet import GoogLenet
+from model import Alex, CNN, HoseiCNN
 from labeling import labeling
+from finetune import copy_model
 
 import numpy as np
 import argparse
+import _pickle as pickle
 from datetime import datetime
 
 import chainer
@@ -17,6 +15,7 @@ from chainer.datasets import tuple_dataset
 from chainer import Chain, Variable, optimizers
 from chainer import training
 from chainer.training import extensions
+from chainer.links.caffe import CaffeFunction
 
 
 def main():
@@ -26,6 +25,8 @@ def main():
     parser.add_argument('--gpu', '-g', type=int, default=-1)
     parser.add_argument('--out', '-o', default='result_alex')
     parser.add_argument('--channel', '-c', type=int, default=3)
+    parser.add_argument('--model', '-m', type=str, default='alex')
+    parser.add_argument('--caffe', '-cm', type=str, default='')
 
     args = parser.parse_args()
 
@@ -41,7 +42,20 @@ def main():
     data.append(np.asarray(['./datasets/others/', 2]))
     train, test = labeling(data, args.channel)
 
-    model = L.Classifier(Alex())
+    if args.caffe == '':
+        print('without fine tuning')
+        model = L.Classifier(Alex())
+    else:
+        fromCaffeModel = pickle.load(open(args.caffe, 'rb'))
+        if args.model == 'alex':
+            model = L.Classifier(Alex())
+        elif args.model == 'cnn':
+            model = L.Classifier(CNN())
+        elif args.model == 'hosei':
+            model = L.Classifier(HoseiCNN())
+        copy_model(fromCaffeModel, model)
+
+    
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()
         model.to_gpu()
